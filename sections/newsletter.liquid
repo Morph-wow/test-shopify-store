@@ -1,0 +1,211 @@
+{% comment %}
+  Newsletter Signup Section
+{% endcomment %}
+
+<div class="newsletter-section">
+  <div class="newsletter-content">
+    {% if section.settings.heading != blank %}
+      <h2 class="newsletter-heading">{{ section.settings.heading }}</h2>
+    {% endif %}
+
+    {% if section.settings.subheading != blank %}
+      <p class="newsletter-subheading">{{ section.settings.subheading }}</p>
+    {% endif %}
+
+    {% form 'customer', class: 'newsletter-form' %}
+      {% if form.posted_successfully? %}
+        <div class="newsletter-success">
+          <p>{{ section.settings.success_message }}</p>
+        </div>
+      {% else %}
+        <div class="newsletter-form-wrapper">
+          <input
+            type="email"
+            name="contact[email]"
+            placeholder="{{ section.settings.placeholder }}"
+            class="newsletter-input"
+            required
+          >
+          <button type="submit" class="newsletter-button">
+            {{ section.settings.button_label }}
+          </button>
+        </div>
+
+        {% if form.errors %}
+          <div class="newsletter-error">
+            {{ form.errors | default_errors }}
+          </div>
+        {% endif %}
+      {% endif %}
+
+      <input type="hidden" name="contact[tags]" value="newsletter">
+    {% endform %}
+  </div>
+</div>
+
+{% stylesheet %}
+  .newsletter-section {
+    display: grid;
+    grid-template-columns: var(--content-grid);
+    background-color: #f8f8f8;
+    padding: 5rem 0;
+  }
+
+  .newsletter-content {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2rem;
+    padding: 0 24px;
+  }
+
+  .newsletter-heading {
+    font-size: 2.5rem;
+    margin: 0;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .newsletter-subheading {
+    font-size: 1.1rem;
+    color: #666;
+    max-width: 50ch;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .newsletter-form {
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .newsletter-form-wrapper {
+    display: flex;
+    gap: 0;
+    width: 100%;
+  }
+
+  .newsletter-input {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    border: 1px solid #ddd;
+    border-right: none;
+    font-size: 1rem;
+    background-color: white;
+    transition: border-color 0.3s ease;
+  }
+
+  .newsletter-input:focus {
+    outline: none;
+    border-color: var(--color-foreground);
+  }
+
+  .newsletter-button {
+    padding: 1rem 2.5rem;
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+    border: 1px solid var(--color-foreground);
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+
+  .newsletter-button:hover {
+    background-color: transparent;
+    color: var(--color-foreground);
+  }
+
+  .newsletter-success {
+    padding: 1rem;
+    background-color: #d4edda;
+    color: #155724;
+    border-radius: 4px;
+  }
+
+  .newsletter-success p {
+    margin: 0;
+  }
+
+  .newsletter-error {
+    color: #721c24;
+    background-color: #f8d7da;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 768px) {
+    .newsletter-section {
+      padding: 3rem 0;
+    }
+
+    .newsletter-heading {
+      font-size: 2rem;
+    }
+
+    .newsletter-form-wrapper {
+      flex-direction: column;
+    }
+
+    .newsletter-input {
+      border-right: 1px solid #ddd;
+      border-bottom: none;
+    }
+
+    .newsletter-button {
+      width: 100%;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Newsletter",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Stay In Touch"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Subscribe to receive updates, access to exclusive deals, and more."
+    },
+    {
+      "type": "text",
+      "id": "placeholder",
+      "label": "Email Placeholder",
+      "default": "Enter your email"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button Label",
+      "default": "Subscribe"
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "Success Message",
+      "default": "Thank you for subscribing!"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Newsletter",
+      "category": "Promotional"
+    }
+  ]
+}
+{% endschema %}

@@ -12,33 +12,41 @@
     "hero": {
       "type": "hero-banner",
       "settings": {
-        "heading": "Welcome to Our Store",
-        "subheading": "Discover amazing products at unbeatable prices",
-        "button_label": "Shop Now",
+        "heading": "Luxe Atelier",
+        "subheading": "Where elegance meets contemporary design",
+        "button_label": "Explore Collection",
         "button_link": "/collections/all"
       }
     },
     "featured-products": {
       "type": "featured-products",
       "settings": {
-        "heading": "Featured Products",
+        "heading": "New Arrivals",
         "products_to_show": 4
       }
     },
     "about": {
       "type": "image-with-text",
       "settings": {
-        "heading": "About Our Store",
-        "text": "<p>We're passionate about bringing you the best products at great prices. Our carefully curated selection ensures quality and value in every purchase.</p>",
-        "button_label": "Learn More",
+        "heading": "Crafted for You",
+        "text": "<p>At Luxe Atelier, we curate timeless pieces that blend sophistication with modern style. Each item is carefully selected to elevate your wardrobe and express your unique personality.</p>",
+        "button_label": "Our Story",
         "button_link": "/pages/about",
         "layout": "image_left"
+      }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "heading": "Stay In Touch",
+        "subheading": "Subscribe to receive updates, access to exclusive deals, and more."
       }
     }
   },
   "order": [
     "hero",
     "featured-products",
-    "about"
+    "about",
+    "newsletter"
   ]
 }
