@@ -9,14 +9,27 @@
   <div class="product-container">
     <div class="product-images">
       {% if product.images.size > 0 %}
-        {% for image in product.images %}
+        <div class="product-main-image">
           <img
-            src="{{ image | img_url: '600x600' }}"
-            alt="{{ image.alt | escape }}"
-            class="product-image"
-            loading="lazy"
+            src="{{ product.featured_image | img_url: '800x1000' }}"
+            alt="{{ product.featured_image.alt | escape }}"
+            class="main-image"
+            id="main-product-image"
           >
-        {% endfor %}
+        </div>
+        {% if product.images.size > 1 %}
+          <div class="product-thumbnails">
+            {% for image in product.images %}
+              <img
+                src="{{ image | img_url: '150x150' }}"
+                alt="{{ image.alt | escape }}"
+                class="thumbnail-image {% if forloop.first %}active{% endif %}"
+                data-full-size="{{ image | img_url: '800x1000' }}"
+                onclick="changeMainImage(this)"
+              >
+            {% endfor %}
+          </div>
+        {% endif %}
       {% else %}
         <div class="product-image-placeholder">
           {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
@@ -25,13 +38,20 @@
     </div>
 
     <div class="product-details">
+      <div class="product-vendor">
+        {% if product.vendor %}{{ product.vendor }}{% else %}LUXE ATELIER{% endif %}
+      </div>
+
       <h1 class="product-title">{{ product.title }}</h1>
 
-      <div class="product-price">
+      <div class="product-price-wrapper">
         {% if product.compare_at_price > product.price %}
           <span class="price-compare">{{ product.compare_at_price | money }}</span>
+          <span class="price price-sale">{{ product.price | money }}</span>
+          <span class="price-badge">SALE</span>
+        {% else %}
+          <span class="price">{{ product.price | money }}</span>
         {% endif %}
-        <span class="price">{{ product.price | money }}</span>
       </div>
 
       {% if product.description != blank %}
@@ -46,77 +66,159 @@
 
           {% if product.variants.size > 1 %}
             <div class="form-field">
-              <label for="variant-selector">Variant</label>
-              <select name="id" id="variant-selector" class="variant-select">
-                {% for variant in product.variants %}
-                  <option
-                    value="{{ variant.id }}"
-                    {% if variant == current_variant %}selected="selected"{% endif %}
-                    {% unless variant.available %}disabled{% endunless %}
-                  >
-                    {{ variant.title }}
-                    {% unless variant.available %} - Sold Out{% endunless %}
-                  </option>
-                {% endfor %}
-              </select>
+              <label for="variant-selector" class="field-label">SELECT SIZE</label>
+              <div class="variant-selector-wrapper">
+                <select name="id" id="variant-selector" class="variant-select">
+                  {% for variant in product.variants %}
+                    <option
+                      value="{{ variant.id }}"
+                      {% if variant == current_variant %}selected="selected"{% endif %}
+                      {% unless variant.available %}disabled{% endunless %}
+                    >
+                      {{ variant.title }}
+                      {% unless variant.available %} - Sold Out{% endunless %}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
             </div>
           {% else %}
             <input type="hidden" name="id" value="{{ current_variant.id }}">
           {% endif %}
 
-          <div class="form-field">
-            <label for="quantity">Quantity</label>
-            <input type="number" name="quantity" id="quantity" min="1" value="1" class="quantity-input">
+          <div class="form-field quantity-field">
+            <label for="quantity" class="field-label">QUANTITY</label>
+            <div class="quantity-selector">
+              <button type="button" class="quantity-btn" onclick="decreaseQuantity()">−</button>
+              <input type="number" name="quantity" id="quantity" min="1" value="1" class="quantity-input" readonly>
+              <button type="button" class="quantity-btn" onclick="increaseQuantity()">+</button>
+            </div>
           </div>
 
           <button type="submit" class="add-to-cart-button" {% unless current_variant.available %}disabled{% endunless %}>
             {% if current_variant.available %}
-              Add to Cart
+              ADD TO CART
             {% else %}
-              Sold Out
+              SOLD OUT
             {% endif %}
           </button>
 
-          {{ form | payment_button }}
+          <div class="product-info-list">
+            <div class="info-item">
+              <span class="info-label">SKU:</span>
+              <span class="info-value">{{ current_variant.sku | default: 'N/A' }}</span>
+            </div>
+            {% if product.available %}
+              <div class="info-item">
+                <span class="info-label">Availability:</span>
+                <span class="info-value availability-in-stock">In Stock</span>
+              </div>
+            {% else %}
+              <div class="info-item">
+                <span class="info-label">Availability:</span>
+                <span class="info-value availability-out">Out of Stock</span>
+              </div>
+            {% endif %}
+          </div>
         {% endform %}
       </div>
     </div>
   </div>
 </div>
 
+<script>
+  function changeMainImage(thumbnail) {
+    const mainImage = document.getElementById('main-product-image');
+    const fullSizeUrl = thumbnail.getAttribute('data-full-size');
+    mainImage.src = fullSizeUrl;
+
+    document.querySelectorAll('.thumbnail-image').forEach(thumb => {
+      thumb.classList.remove('active');
+    });
+    thumbnail.classList.add('active');
+  }
+
+  function increaseQuantity() {
+    const input = document.getElementById('quantity');
+    input.value = parseInt(input.value) + 1;
+  }
+
+  function decreaseQuantity() {
+    const input = document.getElementById('quantity');
+    if (parseInt(input.value) > 1) {
+      input.value = parseInt(input.value) - 1;
+    }
+  }
+</script>
+
 {% stylesheet %}
   .product-page {
     display: grid;
     grid-template-columns: var(--content-grid);
-    padding: 60px 0;
+    padding: 2rem 0 6rem;
   }
 
   .product-container {
     grid-column: 2;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 5rem;
     padding: 0 24px;
+    align-items: start;
   }
 
   .product-images {
     display: flex;
     flex-direction: column;
+    gap: 1.5rem;
+    position: sticky;
+    top: 100px;
+  }
+
+  .product-main-image {
+    width: 100%;
+    overflow: hidden;
+    background-color: #f6f6f7;
+  }
+
+  .main-image {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4/5;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .product-main-image:hover .main-image {
+    transform: scale(1.02);
+  }
+
+  .product-thumbnails {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 1rem;
   }
 
-  .product-image {
+  .thumbnail-image {
     width: 100%;
-    height: auto;
-    border-radius: 8px;
+    aspect-ratio: 1;
     object-fit: cover;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+
+  .thumbnail-image:hover,
+  .thumbnail-image.active {
+    opacity: 1;
+    border-color: var(--color-foreground);
   }
 
   .product-image-placeholder {
     width: 100%;
-    aspect-ratio: 1;
+    aspect-ratio: 4/5;
     background-color: #f6f6f7;
-    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -131,95 +233,247 @@
   .product-details {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2rem;
+  }
+
+  .product-vendor {
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #999;
+    font-weight: 500;
   }
 
   .product-title {
     font-size: 2.5rem;
     margin: 0;
-    font-weight: 700;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    text-transform: uppercase;
   }
 
-  .product-price {
+  .product-price-wrapper {
     display: flex;
     align-items: center;
     gap: 1rem;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5;
   }
 
   .price {
-    font-weight: 700;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+
+  .price-sale {
+    color: #c41e3a;
   }
 
   .price-compare {
     text-decoration: line-through;
     color: #999;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+    font-weight: 300;
+  }
+
+  .price-badge {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    padding: 0.3rem 0.6rem;
+    background-color: #c41e3a;
+    color: white;
+    font-weight: 600;
   }
 
   .product-description {
-    line-height: 1.6;
+    line-height: 1.8;
     color: #666;
+    font-size: 0.95rem;
+  }
+
+  .product-description p {
+    margin-bottom: 1rem;
   }
 
   .product-form {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    margin-top: 1rem;
   }
 
   .form-field {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
 
-  .form-field label {
-    font-weight: 600;
+  .field-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #333;
   }
 
-  .variant-select,
-  .quantity-input {
-    padding: 0.75rem;
+  .variant-selector-wrapper {
+    position: relative;
+  }
+
+  .variant-select {
+    width: 100%;
+    padding: 1rem 1.25rem;
     border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
+    border-radius: 0;
+    font-size: 0.95rem;
+    background-color: white;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 3rem;
+  }
+
+  .variant-select:focus {
+    outline: none;
+    border-color: var(--color-foreground);
+  }
+
+  .quantity-selector {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    width: fit-content;
+    transition: border-color 0.3s ease;
+  }
+
+  .quantity-selector:focus-within {
+    border-color: var(--color-foreground);
+  }
+
+  .quantity-btn {
+    width: 45px;
+    height: 50px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 1.2rem;
+    font-weight: 300;
+    transition: background-color 0.2s ease;
+    color: #333;
+  }
+
+  .quantity-btn:hover {
+    background-color: #f6f6f7;
   }
 
   .quantity-input {
-    width: 100px;
+    width: 60px;
+    height: 50px;
+    border: none;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 500;
+    -moz-appearance: textfield;
+  }
+
+  .quantity-input::-webkit-outer-spin-button,
+  .quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .quantity-input:focus {
+    outline: none;
   }
 
   .add-to-cart-button {
-    padding: 1rem 2rem;
+    width: 100%;
+    padding: 1.25rem 2rem;
     background-color: var(--color-foreground);
     color: var(--color-background);
-    border: none;
-    border-radius: 4px;
-    font-size: 1.1rem;
-    font-weight: 600;
+    border: 2px solid var(--color-foreground);
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
   }
 
   .add-to-cart-button:hover:not(:disabled) {
-    opacity: 0.9;
+    background-color: transparent;
+    color: var(--color-foreground);
   }
 
   .add-to-cart-button:disabled {
     background-color: #ccc;
+    border-color: #ccc;
     cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .product-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e5e5;
+    margin-top: 1rem;
+  }
+
+  .info-item {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .info-label {
+    color: #666;
+    font-weight: 500;
+  }
+
+  .info-value {
+    color: #333;
+  }
+
+  .availability-in-stock {
+    color: #28a745;
+    font-weight: 500;
+  }
+
+  .availability-out {
+    color: #c41e3a;
+    font-weight: 500;
+  }
+
+  @media (max-width: 1024px) {
+    .product-container {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+
+    .product-images {
+      position: static;
+    }
   }
 
   @media (max-width: 768px) {
-    .product-container {
-      grid-template-columns: 1fr;
-      gap: 2rem;
+    .product-title {
+      font-size: 1.8rem;
     }
 
-    .product-title {
-      font-size: 2rem;
+    .product-price-wrapper {
+      font-size: 1.5rem;
+    }
+
+    .product-thumbnails {
+      grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
     }
   }
 {% endstylesheet %}
