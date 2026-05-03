@@ -5,7 +5,10 @@
       "Bash(git --version)",
       "Bash(mv dawn/* .)",
       "Bash(mv dawn/.* .)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "WebFetch(domain:shopify.dev)"
     ]
   }
 }
